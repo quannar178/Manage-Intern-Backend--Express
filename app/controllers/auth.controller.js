@@ -60,11 +60,11 @@ const forgetPassword = async (req, res, next) => {
   const user = await User.findOne({ where: { email: email } });
   console.log(user);
   if (user && user.CMND === CMND) {
-    const exp = 1 / 288;
+    const exp = 1;
     const token = "Bearer " + encodeToken(user.id, user.role, exp);
     res.setHeader("Authorization", token);
     res.status(StatusCodes.OK).json({
-      message: "Cho phep doi mat khau trong 5 phut",
+      message: "Cho phep doi mat khau trong 1 ngay",
     });
     next();
   }

@@ -27,7 +27,8 @@ try {
 }
 
 db.User = require("../models/user.model")(sequelize, Sequelize);
-db.FileCV = require('../models/filecv.model')(sequelize, Sequelize)
-db.Project = require('../models/project.model')(sequelize, Sequelize)
+db.FileCV = require("../models/filecv.model")(sequelize, Sequelize);
+db.Project = require("../models/project.model")(sequelize, Sequelize);
+db.Schedule = require("../models/schedule.model")(sequelize, Sequelize);
 
 module.exports = db;

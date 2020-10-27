@@ -5,6 +5,7 @@ const FileCV = db.FileCV;
 const { StatusCodes } = require("http-status-codes");
 const JWT = require("jsonwebtoken");
 const User = db.User;
+const Schedule = db.Schedule;
 
 //helper
 const encodeToken = (sub, role, exp) => {
@@ -18,6 +19,45 @@ const encodeToken = (sub, role, exp) => {
     },
     env.PRIVATE_KEY
   );
+};
+const updateOrInsertDraft = async (idUser, date, draft) => {
+  try {
+    const schedule = await Schedule.findOne({ where: { idUser, date } });
+    console.log("Schedule -----------------", schedule);
+    if (schedule) {
+      schedule.draft = draft;
+      await schedule.save();
+    } else {
+      await Schedule.create({
+        idUser: idUser,
+        date: date,
+        draft: draft,
+      });
+    }
+  } catch (error) {
+    return new Error(error);
+  }
+};
+
+const updateOrInsertPublic = async (idUser, date, pub) => {
+  try {
+    const schedule = await Schedule.findOne({ where: { idUser, date } });
+    console.log(schedule);
+    if (schedule) {
+      schedule.draft = pub;
+      schedule.publicSche = pub;
+      schedule.save();
+    } else {
+      await Schedule.create({
+        idUser,
+        date,
+        draft: pub,
+        publicSche: pub,
+      });
+    }
+  } catch (error) {
+    return new Error(error);
+  }
 };
 
 //main
@@ -68,6 +108,58 @@ const profile = async (req, res, next) => {
   }
 };
 
+const publicSchedule = async (req, res, next) => {
+  try {
+    const schedules = req.body.schedule;
+    const idUser = req.user.id;
+    schedules.forEach(async (schedule) => {
+      console.log("-----", schedule);
+      updateOrInsertPublic(
+        idUser,
+        new Date(schedule.date),
+        schedule.publicSche
+      ).catch((error) => {
+        throw new Error(error);
+      });
+    });
+    res.status(StatusCodes.CREATED).json({
+      message: "Save schedule",
+    });
+    next();
+  } catch (error) {
+    res.status(StatusCodes.NOT_FOUND).json(error);
+  }
+};
+
+const registerSchedule = async (req, res, next) => {
+  try {
+    const schedules = req.body.schedule;
+    const idUser = req.user.id;
+    console.log(schedules);
+
+    schedules.forEach(async (schedule) => {
+      updateOrInsertDraft(
+        idUser,
+        new Date(schedule.date),
+        schedule.draft
+      ).catch((error) => {
+        throw new Error(error);
+      });
+      // await Schedule.create({
+      //   idUser: idUser,
+      //   date: schedule.date,
+      //   draft: schedule.draft,
+      // });
+    });
+    res.status(StatusCodes.CREATED).json({
+      message: "Save draft",
+    });
+    next();
+  } catch (error) {
+    res.status(StatusCodes.NOT_FOUND).json(error);
+  }
+};
+
 const uploadFile = (req, res) => {
   FileCV.create({
     id: req.user.id,
@@ -95,5 +187,7 @@ const uploadFile = (req, res) => {
 module.exports = {
   downloadFile,
   profile,
+  publicSchedule,
+  registerSchedule,
   uploadFile,
 };
