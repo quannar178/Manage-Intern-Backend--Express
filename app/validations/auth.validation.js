@@ -2,7 +2,7 @@ const Joi = require('joi')
 
 const  {StatusCodes} = require('http-status-codes') ;
 
-const validateBody = (schema) {
+const validateBody = (schema) => {
     return (req, res, next) => {
         const validateResult = schema.validate(req.body);
 
@@ -17,7 +17,7 @@ const validateBody = (schema) {
     }
 }
 
-const validateParam = (schema, name){
+const validateParam = (schema, name) => {
 
 }
 

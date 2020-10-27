@@ -1,3 +1,4 @@
+const bcryptjs = require("bcryptjs");
 const { DataTypes } = require("sequelize");
 module.exports = function (sequelize, Sequelize) {
   const User = sequelize.define(
@@ -12,11 +13,11 @@ module.exports = function (sequelize, Sequelize) {
         defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
       },
-      firstName: {
+      firstname: {
         type: DataTypes.STRING,
         notEmpty: true,
       },
-      lastName: {
+      lastname: {
         type: DataTypes.STRING,
         notEmpty: true,
       },
@@ -36,31 +37,51 @@ module.exports = function (sequelize, Sequelize) {
       nation: {
         type: DataTypes.STRING,
       },
-      startedAt: {
+      startedat: {
         type: DataTypes.DATE,
         defaultValue: Sequelize.NOW,
       },
       role: {
-        type: DataTypes.ENUM("user", "intern", "leader", "admin"),
-        defaultValue: "user",
+        type: DataTypes.ENUM("intern", "leader", "admin"),
+        defaultValue: "intern",
       },
       CMND: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
       },
       university: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
       },
       leader: {
-        type: DataTypes.INTEGER
+        type: DataTypes.INTEGER,
       },
       project: {
-        type: DataTypes.INTEGER
-      }
+        type: DataTypes.INTEGER,
+      },
     },
     {
       modelName: "User",
     }
   );
+
+  User.beforeCreate(async (user, options) => {
+    try {
+      const salt = await bcryptjs.genSalt();
+      console.log(salt);
+      const passwordHash = await bcryptjs.hash(user.password, salt);
+      console.log(passwordHash);
+      user.password = passwordHash;
+    } catch (error) {}
+  });
+
+  User.prototype.isValidPassword = async function (newpasword) {
+    try {
+      console.log("in model", newpasword);
+      return await bcryptjs.compare(newpasword, this.password);
+    } catch (error) {
+      console.log(error);
+      throw new Error(error);
+    }
+  };
 
   return User;
 };

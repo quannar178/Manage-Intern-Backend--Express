@@ -4,7 +4,6 @@ const { StatusCodes } = require("http-status-codes");
 
 const create = async (req, res, next) => {
   const { name, description, deadline } = req.body;
-  console.log("in controller");
 
   try {
     const project = await Project.create({
