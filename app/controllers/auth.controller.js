@@ -4,6 +4,7 @@ const { StatusCodes } = require("http-status-codes");
 const JWT = require("jsonwebtoken");
 const User = db.User;
 
+//helper
 const encodeToken = (sub, role, exp) => {
   return JWT.sign(
     {
@@ -17,6 +18,7 @@ const encodeToken = (sub, role, exp) => {
   );
 };
 
+//main
 const changeRole = async (req, res, next) => {
   try {
     const user = await User.findOne({ where: { id: req.body.id } });
