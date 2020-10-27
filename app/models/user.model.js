@@ -73,6 +73,16 @@ module.exports = function (sequelize, Sequelize) {
     } catch (error) {}
   });
 
+  User.beforeUpdate(async (user, options) => {
+    try {
+      const salt = await bcryptjs.genSalt();
+      console.log(salt);
+      const passwordHash = await bcryptjs.hash(user.password, salt);
+      console.log(passwordHash);
+      user.password = passwordHash;
+    } catch (error) {}
+  });
+
   User.prototype.isValidPassword = async function (newpasword) {
     try {
       console.log("in model", newpasword);

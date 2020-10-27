@@ -2,8 +2,9 @@ const bodyParser = require("body-parser");
 const db = require("./configs/db.configs");
 const express = require("express");
 const logger = require("morgan");
-const routerProject = require("./routers/routerProject");
 const routerAuth = require("./routers/routerAuth");
+const routerProject = require("./routers/routerProject");
+const routerUser = require("./routers/routerUser");
 
 //create app
 const port = 8000;
@@ -24,5 +25,6 @@ app.use(bodyParser.json());
 //router
 app.use("/api/project", routerProject);
 app.use("/api/auth", routerAuth);
+app.use("/api/user", routerUser);
 
 app.listen(port, () => console.log(`You are listening at ${port}`));
