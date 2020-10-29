@@ -18,10 +18,16 @@ const {
 } = require("../validations/salary.validation");
 
 routerUser.put(
-  "/profile",
+  "/updateprofile",
   validateBody(schemas.profile),
   passport.authenticate("jwt", { session: false }),
-  UserController.profile
+  UserController.updateProfile
+);
+
+routerUser.get(
+  "/getprofile",
+  passport.authenticate("jwt", { session: false }),
+  UserController.getProfile
 );
 
 routerUser.post(

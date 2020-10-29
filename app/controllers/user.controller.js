@@ -62,12 +62,12 @@ const updateOrInsertPublic = async (idUser, date, pub) => {
 };
 
 const updateOrInsertSalary = async (idUser, month, salary) => {
-  console.log('jfksjflalksfjlkdjf@');
+  console.log("jfksjflalksfjlkdjf@");
   try {
     const userSalary = await Salary.findOne({ where: { idUser, month } });
-    
+
     if (userSalary) {
-      console.log("exist",userSalary);
+      console.log("exist", userSalary);
       userSalary.salary = salary;
       userSalary.save();
       return;
@@ -85,9 +85,15 @@ const updateOrInsertSalary = async (idUser, month, salary) => {
 };
 
 //main
-const downloadFile = (req, res) => {
+const downloadFile = (req, res, next) => {
   FileCV.findOne({ where: { id: req.body.id } })
     .then((file) => {
+      if (!file) {
+        res.status(StatusCodes.NOT_FOUND).json({
+          message: "No CV",
+        });
+        next();
+      }
       var fileContents = Buffer.from(file.data, "base64");
       var readStream = new stream.PassThrough();
       readStream.end(fileContents);
@@ -96,13 +102,15 @@ const downloadFile = (req, res) => {
       res.set("Content-Type", file.type);
 
       readStream.pipe(res);
+      next();
     })
     .catch((err) => {
       console.log(err);
       res.json({ msg: "Error", detail: err });
+      next();
     });
 };
-const profile = async (req, res, next) => {
+const updateProfile = async (req, res, next) => {
   try {
     const user = await User.findOne({ where: { id: req.user.id } });
 
@@ -126,6 +134,89 @@ const profile = async (req, res, next) => {
     res.status(StatusCodes.OK).json({
       message: "Update profile successfully",
     });
+  } catch (error) {
+    res.status(StatusCodes.NOT_FOUND).json(error);
+    next();
+  }
+};
+const getProfile = async (req, res, next) => {
+  try {
+    const user = await User.findOne({ where: { id: req.user.id } });
+    const filecv = await FileCV.findOne({ where: { id: req.user.id } });
+  
+    if (!user) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "not found user",
+      });
+      next();
+    }
+    let userInfo = {};
+
+    if(!filecv){
+      userInfo["hasCV"] = false;
+    }else{
+      userInfo["hasCV"] = true;
+    }
+
+    // console.log(user);
+    if (user.firstname) {
+      userInfo["firstname"] = user.firstname;
+    } else {
+      userInfo["firstname"] = "No infomation";
+    }
+
+    if (user.lastname) {
+      userInfo["lastname"] = user.lastname;
+    } else {
+      userInfo["lastname"] = "No infomation";
+    }
+    if (user.email) {
+      userInfo["email"] = user.email;
+    } else {
+      userInfo["email"] = "No infomation";
+    }
+    if (user.gender) {
+      userInfo["gender"] = user.gender;
+    } else {
+      userInfo["gender"] = "No infomation";
+    }
+    if (user.nation) {
+      userInfo["nation"] = user.nation;
+    } else {
+      userInfo["nation"] = "No infomation";
+    }
+    if (user.startedat) {
+      userInfo["startedat"] = user.startedat;
+    } else {
+      userInfo["startedat"] = "No infomation";
+    }
+    if (user.role) {
+      userInfo["role"] = user.role;
+    } else {
+      userInfo["role"] = "No infomation";
+    }
+    if (user.CMND) {
+      userInfo["CMND"] = user.CMND;
+    } else {
+      userInfo["CMND"] = "No infomation";
+    }
+    if (user.university) {
+      userInfo["university"] = user.university;
+    } else {
+      userInfo["university"] = "No infomation";
+    }
+    if (user.leader) {
+      userInfo["leader"] = user.leader;
+    } else {
+      userInfo["leader"] = "No infomation";
+    }
+    if (user.project) {
+      userInfo["project"] = user.project;
+    } else {
+      userInfo["project"] = "No infomation";
+    }
+    // console.log("Update.............", newuser);
+    res.status(StatusCodes.OK).json(userInfo);
   } catch (error) {
     res.status(StatusCodes.NOT_FOUND).json(error);
     next();
@@ -225,7 +316,8 @@ const updateSalary = async (req, res, next) => {
 
 module.exports = {
   downloadFile,
-  profile,
+  updateProfile,
+  getProfile,
   publicSchedule,
   registerSchedule,
   uploadFile,
