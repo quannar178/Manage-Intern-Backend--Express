@@ -6,6 +6,7 @@ const { StatusCodes } = require("http-status-codes");
 const JWT = require("jsonwebtoken");
 const User = db.User;
 const Schedule = db.Schedule;
+const Salary = db.Salary;
 
 //helper
 const encodeToken = (sub, role, exp) => {
@@ -56,6 +57,29 @@ const updateOrInsertPublic = async (idUser, date, pub) => {
       });
     }
   } catch (error) {
+    return new Error(error);
+  }
+};
+
+const updateOrInsertSalary = async (idUser, month, salary) => {
+  console.log('jfksjflalksfjlkdjf@');
+  try {
+    const userSalary = await Salary.findOne({ where: { idUser, month } });
+    
+    if (userSalary) {
+      console.log("exist",userSalary);
+      userSalary.salary = salary;
+      userSalary.save();
+      return;
+    }
+    const newSalary = await Salary.create({
+      idUser,
+      month,
+      salary,
+    });
+    console.log(newSalary);
+  } catch (error) {
+    console.log(error);
     return new Error(error);
   }
 };
@@ -184,10 +208,26 @@ const uploadFile = (req, res) => {
     });
 };
 
+const updateSalary = async (req, res, next) => {
+  const { idUser, month, salary } = req.body;
+  console.log(req.body);
+  try {
+    await updateOrInsertSalary(idUser, month, salary);
+    res.status(StatusCodes.OK).json({
+      message: "change salary successfully",
+    });
+    next();
+  } catch (error) {
+    res.status(StatusCodes.NOT_FOUND).json(error);
+    next();
+  }
+};
+
 module.exports = {
   downloadFile,
   profile,
   publicSchedule,
   registerSchedule,
   uploadFile,
+  updateSalary,
 };

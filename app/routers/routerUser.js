@@ -1,11 +1,21 @@
 const UserController = require("../controllers/user.controller");
+const env = require('../configs/env')
 const express = require("express");
 const upload = require("../configs/multer.config");
 const passport = require("passport");
 const ConfigPassport = require("../middleware/passport");
 const routerUser = express.Router();
+const checkRole = require("../middleware/auth");
+
 const { validateBody, schemas } = require("../validations/auth.validation");
-const {validateBodySchedule, schemasSchedule} = require("../validations/user.validation")
+const {
+  validateBodySchedule,
+  schemasSchedule,
+} = require("../validations/user.validation");
+const {
+  validateBodySalary,
+  schemasSalary,
+} = require("../validations/salary.validation");
 
 routerUser.put(
   "/profile",
@@ -35,5 +45,13 @@ routerUser.post(
   validateBodySchedule(schemasSchedule.schemaPerDayPublic),
   passport.authenticate("jwt", { session: false }),
   UserController.publicSchedule
+);
+
+routerUser.post(
+  "/changesalary",
+  validateBodySalary(schemasSalary.schemaSalary),
+  passport.authenticate("jwt", { session: false }),
+  checkRole(env.ROLE_ADMIN),
+  UserController.updateSalary
 );
 module.exports = routerUser;

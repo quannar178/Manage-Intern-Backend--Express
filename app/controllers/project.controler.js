@@ -46,6 +46,7 @@ const getAll = async (req, res, next) => {
     let projectsInfo = [];
     projects.forEach((project) => {
       projectsInfo.push({
+        id: project.id,
         name: project.name,
         description: project.description,
         createAt: project.createdAt,

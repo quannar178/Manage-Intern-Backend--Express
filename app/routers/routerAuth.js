@@ -36,5 +36,7 @@ routerAuth.put(
   AuthController.changeRole
 );
 
+routerAuth.post('/getinfo', passport.authenticate("jwt", { session: false }), AuthController.login)
+
 // validateBody(schemas.profile)
 module.exports = routerAuth;
