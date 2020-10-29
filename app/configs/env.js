@@ -11,6 +11,9 @@ const env = {
     idle: 10000,
   },
   PRIVATE_KEY: "private_key",
+  ROLE_ADMIN: 'admin',
+  ROLE_LEADER: 'leader',
+  ROLE_INTERN: 'intern'
 };
 
 module.exports = env;

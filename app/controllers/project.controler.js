@@ -21,24 +21,24 @@ const create = async (req, res, next) => {
 };
 
 const deleteProject = async (req, res, next) => {
-    try {
-        const project = await Project.findOne({ where: { id: req.params.id } });
-        if (!project) {
-          res.status(StatusCodes.NOT_FOUND).json({
-            message: "project not found",
-          });
-        }
+  try {
+    const project = await Project.findOne({ where: { id: req.params.id } });
+    if (!project) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "project not found",
+      });
+    }
 
-        await project.destroy();
-    
-        res.status(StatusCodes.OK).json({
-          message: "Delete successfuly",
-        });
-        return next();
-      } catch (error) {
-        return next(error);
-      }
-}
+    await project.destroy();
+
+    res.status(StatusCodes.OK).json({
+      message: "Delete successfuly",
+    });
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+};
 
 const getAll = async (req, res, next) => {
   try {
@@ -82,6 +82,34 @@ const getById = async (req, res, next) => {
   }
 };
 
+const getProject = async (req, res, next) => {
+  const projectId = req.user.project;
+  if (!projectId) {
+    res.status(StatusCodes.NOT_FOUND).json({
+      message: "You didn't join project",
+    });
+  }
+
+  const project = await Project.findOne({ where: { id: projectId } });
+
+  if (!project) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Didn't find project",
+    });
+  }
+
+  let projectInfo = [];
+  projectInfo.push({
+    id: project.id,
+    name: project.name,
+    description: project.description,
+    createAt: project.createdAt,
+    deadline: project.deadline,
+  });
+
+  res.status(StatusCodes.OK).json(projectInfo);
+};
+
 const update = async (req, res, next) => {
   try {
     const project = await Project.findOne({ where: { id: req.params.id } });
@@ -117,5 +145,6 @@ module.exports = {
   deleteProject,
   getAll,
   getById,
+  getProject,
   update,
 };

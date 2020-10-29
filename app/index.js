@@ -1,4 +1,5 @@
 const bodyParser = require("body-parser");
+const cors = require("cors");
 const db = require("./configs/db.configs");
 const express = require("express");
 const logger = require("morgan");
@@ -19,7 +20,11 @@ db.sequelize.sync({ force: false }).then(() => {
 });
 
 //middleware
+const corsOptions = {
+  exposedHeaders: "Authorization",
+};
 app.use(logger("dev"));
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 //router

@@ -4,7 +4,8 @@ const passport = require("passport");
 const ConfigPassport = require("../middleware/passport");
 const routerAuth = express.Router();
 const { validateBody, schemas } = require("../validations/auth.validation");
-const checkAdmin = require("../middleware/auth");
+const checkRole = require("../middleware/auth");
+const env = require('../configs/env')
 
 routerAuth.post(
   "/register",
@@ -31,7 +32,7 @@ routerAuth.put(
   "/changerole",
   validateBody(schemas.changerole),
   passport.authenticate("jwt", { session: false }),
-  checkAdmin,
+  checkRole(env.ROLE_ADMIN),
   AuthController.changeRole
 );
 
