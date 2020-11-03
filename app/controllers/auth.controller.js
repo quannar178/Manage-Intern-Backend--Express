@@ -2,6 +2,8 @@ const db = require("../configs/db.configs");
 const env = require("../configs/env");
 const { StatusCodes } = require("http-status-codes");
 const JWT = require("jsonwebtoken");
+const { password } = require("../configs/env");
+const nodemailer = require("nodemailer");
 const User = db.User;
 
 //helper
@@ -51,6 +53,7 @@ const login = async (req, res, next) => {
   res.status(StatusCodes.OK).json({
     message: "Login sucessfully",
     role: req.user.role,
+    id: req.user.id,
   });
   next();
 };
@@ -67,11 +70,56 @@ const forgetPassword = async (req, res, next) => {
       message: "Cho phep doi mat khau trong 1 ngay",
     });
     next();
+  } else {
+    res.status(StatusCodes.BAD_REQUEST).json({
+      message: "Email or CMND is invalid",
+    });
+    next();
   }
+};
 
-  res.status(StatusCodes.BAD_REQUEST).json({
-    message: "Email or CMND is invalid",
-  });
+const forgetPasswordPro = async (req, res, next) => {
+  const { email } = req.body;
+  const user = await User.findOne({ where: { email: email } });
+  console.log(user);
+  if (user) {
+    const exp = 1;
+    const token = encodeToken(user.id, user.role, exp);
+
+    var transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "quannar178@gmail.com",
+        pass: "aqnwlzrmyzrwdtie",
+      },
+    });
+
+    var mailOptions = {
+      from: "quannar178@gmail.com",
+      to: email,
+      subject: "Reset password using Node.js",
+      text: "http://localhost:8000/api/auth/resetpasswordpro/" + token,
+    };
+
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("Email sent: " + info.response);
+      }
+    });
+
+    res.status(200).json({
+      message: "Success send link",
+    });
+
+    next();
+  } else {
+    res.status(StatusCodes.BAD_REQUEST).json({
+      message: "Email is invalid",
+    });
+    next();
+  }
 };
 
 const register = async (req, res, next) => {
@@ -106,13 +154,52 @@ const register = async (req, res, next) => {
 
 const resetPassword = async (req, res, next) => {
   try {
-    const user = await User.findOne({ where: { id: req.user.id } });
-    user.password = req.body.password;
-    user.save();
-    res.status(StatusCodes.OK).json({
-      message: "change password success",
-    });
-    next();
+    console.log("@@@@@", req.body);
+    const password = req.body.password;
+    if (password.toString().length < 6) {
+      req.status(StatusCodes.BAD_REQUEST).json({
+        message: "password is too short",
+      });
+      next();
+    } else {
+      const user = await User.findOne({ where: { id: req.user.id } });
+      console.log(user);
+      user.password = req.body.password;
+      user.save();
+      res.status(StatusCodes.OK).json({
+        message: "change password success",
+      });
+      next();
+    }
+  } catch (error) {
+    res.status(StatusCodes.NOT_FOUND).json(error);
+  }
+};
+const resetPasswordPro = async (req, res, next) => {
+  try {
+    console.log("@@@@@", req.body);
+    const password = req.body.password;
+    if (password.toString().length < 6) {
+      console.log("");
+      req.status(StatusCodes.BAD_REQUEST).json({
+        message: "password is too short",
+      });
+      next();
+    } else {
+      console.log("@@@@rjewirlajlfklk");
+      const token = req.params["token"];
+      console.log("in middleware", token);
+      var decoded = JWT.verify(token, env.PRIVATE_KEY);
+      console.log(decoded);
+      const user = await User.findOne({ where: { id: decoded["sub"] } });
+      console.log(user);
+      user.password = req.body.password;
+      user.save();
+      res.status(StatusCodes.OK).json({
+        message: "change password success",
+      });
+      next();
+    }
   } catch (error) {
     res.status(StatusCodes.NOT_FOUND).json(error);
   }
@@ -122,6 +209,8 @@ module.exports = {
   changeRole,
   register,
   forgetPassword,
+  forgetPasswordPro,
   login,
   resetPassword,
+  resetPasswordPro,
 };

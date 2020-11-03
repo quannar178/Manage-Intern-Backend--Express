@@ -1,5 +1,5 @@
 const UserController = require("../controllers/user.controller");
-const env = require('../configs/env')
+const env = require("../configs/env");
 const express = require("express");
 const upload = require("../configs/multer.config");
 const passport = require("passport");
@@ -19,8 +19,12 @@ const {
 
 routerUser.put(
   "/updateprofile",
-  validateBody(schemas.profile),
+  (req, res, next) => {
+    console.log(req.body);
+    next();
+  },
   passport.authenticate("jwt", { session: false }),
+  validateBody(schemas.profile),
   UserController.updateProfile
 );
 
@@ -34,6 +38,10 @@ routerUser.post(
   "/uploadcv",
   passport.authenticate("jwt", { session: false }),
   upload.single("file"),
+  (req, res, next) => {
+    console.log("@@@controller@@@@", req.file);
+    next();
+  },
   UserController.uploadFile
 );
 

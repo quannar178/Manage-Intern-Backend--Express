@@ -5,7 +5,7 @@ const { StatusCodes } = require("http-status-codes");
 const validateBody = (schema) => {
   return (req, res, next) => {
     const validateResult = schema.validate(req.body);
-
+    console.log(req.body);
     if (validateResult.error) {
       res.status(StatusCodes.BAD_REQUEST).json(validateResult.error);
       return next();
@@ -14,8 +14,6 @@ const validateBody = (schema) => {
     }
   };
 };
-
-const validateParam = (schema, name) => {};
 
 const schemas = {
   resigter: Joi.object().keys({

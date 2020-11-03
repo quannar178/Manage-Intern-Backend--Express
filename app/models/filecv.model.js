@@ -3,9 +3,9 @@ module.exports = (sequelize, Sequelize) => {
   const FileCV = sequelize.define(
     "FileCV",
     {
-      id: {
+      idUser: {
         type: DataTypes.INTEGER,
-        primaryKey: true,
+        // primaryKey: true,
       },
       type: {
         type: DataTypes.STRING,

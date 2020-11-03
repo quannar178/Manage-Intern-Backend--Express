@@ -86,7 +86,7 @@ const updateOrInsertSalary = async (idUser, month, salary) => {
 
 //main
 const downloadFile = (req, res, next) => {
-  FileCV.findOne({ where: { id: req.body.id } })
+  FileCV.findOne({ where: { idUser: req.body.id } })
     .then((file) => {
       if (!file) {
         res.status(StatusCodes.NOT_FOUND).json({
@@ -143,7 +143,7 @@ const getProfile = async (req, res, next) => {
   try {
     const user = await User.findOne({ where: { id: req.user.id } });
     const filecv = await FileCV.findOne({ where: { id: req.user.id } });
-  
+
     if (!user) {
       res.status(StatusCodes.NOT_FOUND).json({
         message: "not found user",
@@ -152,9 +152,9 @@ const getProfile = async (req, res, next) => {
     }
     let userInfo = {};
 
-    if(!filecv){
+    if (!filecv) {
       userInfo["hasCV"] = false;
-    }else{
+    } else {
       userInfo["hasCV"] = true;
     }
 
@@ -275,15 +275,17 @@ const registerSchedule = async (req, res, next) => {
   }
 };
 
-const uploadFile = (req, res) => {
-  FileCV.create({
-    id: req.user.id,
-    type: req.file.mimetype,
-    name: req.file.originalname,
-    data: req.file.buffer,
-  })
-    .then((file) => {
-      console.log(file);
+const uploadFile = async (req, res, next) => {
+  try {
+    //find
+    const filecv = await FileCV.findOne({ where: { idUser: req.user.id } });
+    console.log("in user controller@@@", filecv);
+    if (filecv) {
+      filecv.idUser = req.user.id;
+      filecv.type = req.file.mimetype;
+      filecv.name = req.file.originalname;
+      filecv.data = req.file.data;
+      await filecv.save();
 
       const result = {
         filename: req.file.originalname,
@@ -291,12 +293,26 @@ const uploadFile = (req, res) => {
       };
 
       res.status(StatusCodes.OK).json(result);
-    })
-    .catch((err) => {
-      console.log(err);
+      next();
+    } else {
+      await FileCV.create({
+        idUser: req.user.id,
+        // idUser: 102,
+        type: req.file.mimetype,
+        name: req.file.originalname,
+        data: req.file.buffer,
+      });
+      const result = {
+        filename: req.file.originalname,
+        message: "Upload Successfully!",
+      };
 
-      res.status(StatusCodes.NOT_FOUND).json(err);
-    });
+      res.status(StatusCodes.OK).json(result);
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(StatusCodes.NOT_FOUND).json(err);
+  }
 };
 
 const updateSalary = async (req, res, next) => {

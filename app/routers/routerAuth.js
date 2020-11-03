@@ -5,7 +5,8 @@ const ConfigPassport = require("../middleware/passport");
 const routerAuth = express.Router();
 const { validateBody, schemas } = require("../validations/auth.validation");
 const checkRole = require("../middleware/auth");
-const env = require('../configs/env')
+const env = require("../configs/env");
+const jwt = require("jsonwebtoken");
 
 routerAuth.post(
   "/register",
@@ -21,11 +22,17 @@ routerAuth.post(
 );
 
 routerAuth.post("/forgetpassword", AuthController.forgetPassword);
+routerAuth.post("/forgetpasswordpro", AuthController.forgetPasswordPro);
 
 routerAuth.post(
   "/resetpassword",
   passport.authenticate("jwt", { session: false }),
   AuthController.resetPassword
+);
+
+routerAuth.get(
+  "/resetpasswordpro/:token",
+  AuthController.resetPasswordPro
 );
 
 routerAuth.put(
@@ -36,7 +43,11 @@ routerAuth.put(
   AuthController.changeRole
 );
 
-routerAuth.post('/getinfo', passport.authenticate("jwt", { session: false }), AuthController.login)
+routerAuth.post(
+  "/getinfo",
+  passport.authenticate("jwt", { session: false }),
+  AuthController.login
+);
 
 // validateBody(schemas.profile)
 module.exports = routerAuth;
