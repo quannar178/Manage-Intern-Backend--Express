@@ -8,8 +8,9 @@ const validateBodySalary = (schema) => {
     const validateResult = schema.validate(req.body);
 
     if (validateResult.error) {
-      res.status(StatusCodes.BAD_REQUEST).json(validateResult.error);
-      return next();
+      res.status(400).json({
+        message: 'Input is invalid'
+      });
     } else {
       return next();
     }

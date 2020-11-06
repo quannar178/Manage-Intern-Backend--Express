@@ -45,7 +45,7 @@ routerUser.post(
   UserController.uploadFile
 );
 
-routerUser.get("/downloadcv", UserController.downloadFile);
+routerUser.post("/downloadcv", UserController.downloadFile);
 
 routerUser.post(
   "/registerschedule",
@@ -60,6 +60,7 @@ routerUser.post(
   passport.authenticate("jwt", { session: false }),
   UserController.publicSchedule
 );
+routerUser.get("/schedule/:id", UserController.schedule);
 
 routerUser.post(
   "/changesalary",
@@ -67,5 +68,12 @@ routerUser.post(
   passport.authenticate("jwt", { session: false }),
   checkRole(env.ROLE_ADMIN),
   UserController.updateSalary
+);
+
+routerUser.get(
+  "/",
+  passport.authenticate("jwt", { session: false }),
+  checkRole(env.ROLE_ADMIN),
+  UserController.getAll
 );
 module.exports = routerUser;

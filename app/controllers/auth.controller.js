@@ -21,7 +21,7 @@ const encodeToken = (sub, role, exp) => {
 };
 
 //main
-const changeRole = async (req, res, next) => {
+const changeRole = async (req, res) => {
   try {
     const user = await User.findOne({ where: { id: req.body.id } });
 
@@ -29,7 +29,6 @@ const changeRole = async (req, res, next) => {
       res.status(StatusCodes.NOT_FOUND).json({
         message: "not found user",
       });
-      next();
     }
     console.log(user);
     user.role = req.body.role;
@@ -39,14 +38,12 @@ const changeRole = async (req, res, next) => {
     res.status(StatusCodes.OK).json({
       message: "change role success",
     });
-    next();
   } catch (error) {
     res.status(StatusCodes.NOT_FOUND).json(error);
-    next();
   }
 };
 
-const login = async (req, res, next) => {
+const login = async (req, res) => {
   const token = "Bearer " + encodeToken(req.user.id, req.user.role, 3);
 
   res.setHeader("Authorization", token);
@@ -55,10 +52,9 @@ const login = async (req, res, next) => {
     role: req.user.role,
     id: req.user.id,
   });
-  next();
 };
 
-const forgetPassword = async (req, res, next) => {
+const forgetPassword = async (req, res) => {
   const { email, CMND } = req.body;
   const user = await User.findOne({ where: { email: email } });
   console.log(user);
@@ -69,16 +65,14 @@ const forgetPassword = async (req, res, next) => {
     res.status(StatusCodes.OK).json({
       message: "Cho phep doi mat khau trong 1 ngay",
     });
-    next();
   } else {
     res.status(StatusCodes.BAD_REQUEST).json({
       message: "Email or CMND is invalid",
     });
-    next();
   }
 };
 
-const forgetPasswordPro = async (req, res, next) => {
+const forgetPasswordPro = async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ where: { email: email } });
   console.log(user);
@@ -89,16 +83,16 @@ const forgetPasswordPro = async (req, res, next) => {
     var transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "quannar178@gmail.com",
-        pass: "aqnwlzrmyzrwdtie",
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PWD,
       },
     });
 
     var mailOptions = {
-      from: "quannar178@gmail.com",
+      from: process.env.EMAIL,
       to: email,
       subject: "Reset password using Node.js",
-      text: "http://localhost:8000/api/auth/resetpasswordpro/" + token,
+      text: "http://localhost:8080/resetpassword/" + token,
     };
 
     transporter.sendMail(mailOptions, function (error, info) {
@@ -113,16 +107,14 @@ const forgetPasswordPro = async (req, res, next) => {
       message: "Success send link",
     });
 
-    next();
   } else {
     res.status(StatusCodes.BAD_REQUEST).json({
       message: "Email is invalid",
     });
-    next();
   }
 };
 
-const register = async (req, res, next) => {
+const register = async (req, res) => {
   console.log("in auth controller", req.body);
   const { firstname, lastname, email, password } = req.body;
 
@@ -133,7 +125,6 @@ const register = async (req, res, next) => {
       res.status(StatusCodes.BAD_REQUEST).json({
         message: "email is alived",
       });
-      return next();
     }
 
     const user = await User.create({
@@ -145,14 +136,12 @@ const register = async (req, res, next) => {
     res.status(StatusCodes.CREATED).json({
       message: "New user is created",
     });
-    return next();
   } catch (error) {
     res.status(StatusCodes.EXPECTATION_FAILED).json(erorr);
-    return next();
   }
 };
 
-const resetPassword = async (req, res, next) => {
+const resetPassword = async (req, res) => {
   try {
     console.log("@@@@@", req.body);
     const password = req.body.password;
@@ -160,7 +149,6 @@ const resetPassword = async (req, res, next) => {
       req.status(StatusCodes.BAD_REQUEST).json({
         message: "password is too short",
       });
-      next();
     } else {
       const user = await User.findOne({ where: { id: req.user.id } });
       console.log(user);
@@ -169,13 +157,12 @@ const resetPassword = async (req, res, next) => {
       res.status(StatusCodes.OK).json({
         message: "change password success",
       });
-      next();
     }
   } catch (error) {
     res.status(StatusCodes.NOT_FOUND).json(error);
   }
 };
-const resetPasswordPro = async (req, res, next) => {
+const resetPasswordPro = async (req, res) => {
   try {
     console.log("@@@@@", req.body);
     const password = req.body.password;
@@ -184,7 +171,6 @@ const resetPasswordPro = async (req, res, next) => {
       req.status(StatusCodes.BAD_REQUEST).json({
         message: "password is too short",
       });
-      next();
     } else {
       console.log("@@@@rjewirlajlfklk");
       const token = req.params["token"];
@@ -198,7 +184,6 @@ const resetPasswordPro = async (req, res, next) => {
       res.status(StatusCodes.OK).json({
         message: "change password success",
       });
-      next();
     }
   } catch (error) {
     res.status(StatusCodes.NOT_FOUND).json(error);

@@ -6,7 +6,7 @@ const logger = require("morgan");
 const routerAuth = require("./routers/routerAuth");
 const routerProject = require("./routers/routerProject");
 const routerUser = require("./routers/routerUser");
-
+require("dotenv").config();
 //create app
 const port = 8000;
 const app = express();
@@ -21,7 +21,7 @@ db.sequelize.sync({ force: false }).then(() => {
 
 //middleware
 const corsOptions = {
-  exposedHeaders: "Authorization",
+  exposedHeaders: ["Authorization", "Content-Disposition"],
 };
 app.use(logger("dev"));
 app.use(cors(corsOptions));
@@ -31,5 +31,10 @@ app.use(bodyParser.json());
 app.use("/api/project", routerProject);
 app.use("/api/auth", routerAuth);
 app.use("/api/user", routerUser);
+
+app.use(function (err, req, res, next) {
+  console.error(err.stack);
+  res.status(500).send("Something broke!");
+});
 
 app.listen(port, () => console.log(`You are listening at ${port}`));

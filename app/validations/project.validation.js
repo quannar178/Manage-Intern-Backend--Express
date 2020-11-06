@@ -11,7 +11,6 @@ const validateBody = (schema) => {
             res.status(StatusCodes.BAD_REQUEST).json(
                 validateResult.error
             )
-            return next(validateResult.error);
         }else{
             return next()
         }

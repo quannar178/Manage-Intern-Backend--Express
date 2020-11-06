@@ -23,6 +23,8 @@ const encodeToken = (sub, role, exp) => {
 };
 const updateOrInsertDraft = async (idUser, date, draft) => {
   try {
+    console.log("###########", date);
+
     const schedule = await Schedule.findOne({ where: { idUser, date } });
     console.log("Schedule -----------------", schedule);
     if (schedule) {
@@ -43,7 +45,7 @@ const updateOrInsertDraft = async (idUser, date, draft) => {
 const updateOrInsertPublic = async (idUser, date, pub) => {
   try {
     const schedule = await Schedule.findOne({ where: { idUser, date } });
-    console.log(schedule);
+    console.log("###########", date);
     if (schedule) {
       schedule.draft = pub;
       schedule.publicSche = pub;
@@ -86,6 +88,7 @@ const updateOrInsertSalary = async (idUser, month, salary) => {
 
 //main
 const downloadFile = (req, res, next) => {
+  console.log("@@@@@@@@@@@@@", req.body);
   FileCV.findOne({ where: { idUser: req.body.id } })
     .then((file) => {
       if (!file) {
@@ -101,7 +104,12 @@ const downloadFile = (req, res, next) => {
       res.set("Content-disposition", "attachment; filename=" + file.name);
       res.set("Content-Type", file.type);
 
+      // res.json({
+      //   filename: file.name,
+      // });
+
       readStream.pipe(res);
+
       next();
     })
     .catch((err) => {
@@ -111,6 +119,7 @@ const downloadFile = (req, res, next) => {
     });
 };
 const updateProfile = async (req, res, next) => {
+  console.log("####", req.body);
   try {
     const user = await User.findOne({ where: { id: req.user.id } });
 
@@ -139,10 +148,14 @@ const updateProfile = async (req, res, next) => {
     next();
   }
 };
+
+const getAll = async (req, res, next) => {};
 const getProfile = async (req, res, next) => {
   try {
     const user = await User.findOne({ where: { id: req.user.id } });
-    const filecv = await FileCV.findOne({ where: { id: req.user.id } });
+    const filecv = await FileCV.findOne({ where: { idUser: req.user.id } });
+
+    console.log("######", req.user.id);
 
     if (!user) {
       res.status(StatusCodes.NOT_FOUND).json({
@@ -228,10 +241,14 @@ const publicSchedule = async (req, res, next) => {
     const schedules = req.body.schedule;
     const idUser = req.user.id;
     schedules.forEach(async (schedule) => {
-      console.log("-----", schedule);
+      const date = new Date(schedule.date);
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const day = date.getDate();
+      // console.log("-----", schedule);
       updateOrInsertPublic(
         idUser,
-        new Date(schedule.date),
+        new Date(year, month, day, 0, 0, 0, 0),
         schedule.publicSche
       ).catch((error) => {
         throw new Error(error);
@@ -253,18 +270,18 @@ const registerSchedule = async (req, res, next) => {
     console.log(schedules);
 
     schedules.forEach(async (schedule) => {
+      const date = new Date(schedule.date);
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const day = date.getDate();
       updateOrInsertDraft(
         idUser,
-        new Date(schedule.date),
+
+        new Date(year, month, day, 0, 0, 0, 0),
         schedule.draft
       ).catch((error) => {
         throw new Error(error);
       });
-      // await Schedule.create({
-      //   idUser: idUser,
-      //   date: schedule.date,
-      //   draft: schedule.draft,
-      // });
     });
     res.status(StatusCodes.CREATED).json({
       message: "Save draft",
@@ -273,6 +290,22 @@ const registerSchedule = async (req, res, next) => {
   } catch (error) {
     res.status(StatusCodes.NOT_FOUND).json(error);
   }
+};
+
+const schedule = async (req, res) => {
+  const idUser = req.params["id"];
+  console.log(idUser);
+  const schedules = await Schedule.findAll({ where: { idUser } });
+  const scheduleInfo = [];
+  const monthNow = new Date(Date.now()).getMonth();
+  schedules.forEach((schedule) => {
+    const day = new Date(schedule["date"]);
+    const month = day.getMonth();
+    if (month === monthNow) {
+      scheduleInfo[day.getDate() - 1] = schedule["draft"];
+    }
+  });
+  res.status(200).json({ scheduleInfo });
 };
 
 const uploadFile = async (req, res, next) => {
@@ -292,8 +325,7 @@ const uploadFile = async (req, res, next) => {
         message: "Upload Successfully!",
       };
 
-      res.status(StatusCodes.OK).json(result);
-      next();
+      res.status(200).json(result);
     } else {
       await FileCV.create({
         idUser: req.user.id,
@@ -307,11 +339,10 @@ const uploadFile = async (req, res, next) => {
         message: "Upload Successfully!",
       };
 
-      res.status(StatusCodes.OK).json(result);
+      res.status(200).json(result);
     }
   } catch (error) {
-    console.log(error);
-    res.status(StatusCodes.NOT_FOUND).json(err);
+    next(error);
   }
 };
 
@@ -323,10 +354,8 @@ const updateSalary = async (req, res, next) => {
     res.status(StatusCodes.OK).json({
       message: "change salary successfully",
     });
-    next();
   } catch (error) {
-    res.status(StatusCodes.NOT_FOUND).json(error);
-    next();
+    next(error);
   }
 };
 
@@ -338,4 +367,5 @@ module.exports = {
   registerSchedule,
   uploadFile,
   updateSalary,
+  schedule,
 };

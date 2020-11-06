@@ -11,7 +11,6 @@ module.exports = checkRole = (role) => {
         res.status(StatusCodes.FORBIDDEN).json({
           message: "Need role admin",
         });
-        next();
       }
     } else {
       if (
@@ -23,7 +22,6 @@ module.exports = checkRole = (role) => {
         res.status(StatusCodes.FORBIDDEN).json({
           message: "Need role admin or leader",
         });
-        next();
       }
     }
   };

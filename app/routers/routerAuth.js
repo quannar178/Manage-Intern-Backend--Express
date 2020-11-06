@@ -30,8 +30,12 @@ routerAuth.post(
   AuthController.resetPassword
 );
 
-routerAuth.get(
+routerAuth.post(
   "/resetpasswordpro/:token",
+  (req, res, next)=> {
+    console.log(req);
+    next();
+  },
   AuthController.resetPasswordPro
 );
 

@@ -2,7 +2,7 @@ const db = require("../configs/db.configs");
 const Project = db.Project;
 const { StatusCodes } = require("http-status-codes");
 
-const create = async (req, res, next) => {
+const create = async (req, res) => {
   const { name, description, deadline } = req.body;
 
   try {
@@ -14,9 +14,8 @@ const create = async (req, res, next) => {
     res.status(StatusCodes.CREATED).json({
       message: "project is created",
     });
-    return next();
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
@@ -34,9 +33,8 @@ const deleteProject = async (req, res, next) => {
     res.status(StatusCodes.OK).json({
       message: "Delete successfuly",
     });
-    return next();
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
@@ -54,9 +52,8 @@ const getAll = async (req, res, next) => {
       });
     });
     res.status(StatusCodes.OK).json(projectsInfo);
-    return next();
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
@@ -68,18 +65,16 @@ const getById = async (req, res, next) => {
         message: "project not found",
       });
     }
-    let projectInfo = [];
-    projectInfo.push({
+    const projectInfo = {
       id: project.id,
       name: project.name,
       description: project.description,
       createAt: project.createdAt,
       deadline: project.deadline,
-    });
+    };
     res.status(StatusCodes.OK).json(projectInfo);
-    return next();
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
@@ -94,9 +89,9 @@ const getProject = async (req, res, next) => {
   const project = await Project.findOne({ where: { id: projectId } });
 
   if (!project) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: "Didn't find project",
-    });
+    const err = new Error("Didn't find project")
+    err.status = 404;
+    next(err);
   }
 
   let projectInfo = [];
@@ -135,9 +130,8 @@ const update = async (req, res, next) => {
     res.status(StatusCodes.OK).json({
       message: "Update successfuly",
     });
-    return next();
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
