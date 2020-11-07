@@ -70,10 +70,21 @@ routerUser.post(
   UserController.updateSalary
 );
 
-routerUser.get(
-  "/",
-  passport.authenticate("jwt", { session: false }),
-  checkRole(env.ROLE_ADMIN),
-  UserController.getAll
-);
+routerUser
+  .route("/")
+  .get(
+    passport.authenticate("jwt", { session: false }),
+    checkRole(env.ROLE_ADMIN),
+    UserController.getAll
+  )
+  .put(
+    passport.authenticate("jwt", { session: false }),
+    checkRole(env.ROLE_ADMIN),
+    UserController.updateUser
+  )
+  .delete(
+    passport.authenticate("jwt", { session: false }),
+    checkRole(env.ROLE_ADMIN),
+    UserController.deleteUser
+  )
 module.exports = routerUser;

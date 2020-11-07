@@ -149,7 +149,21 @@ const updateProfile = async (req, res, next) => {
   }
 };
 
-const getAll = async (req, res, next) => {};
+const getAll = async (req, res, next) => {
+  const users = await User.findAll();
+  let usersInfo = [];
+  users.forEach((user) => {
+    let info = {};
+    info.id = user.id;
+    info.firstname = user.firstname;
+    info.lastname = user.lastname;
+    info.role = user.role;
+    info.leader = user.leader;
+    info.project = user.project;
+    usersInfo.push(info);
+  });
+  res.status(200).json(usersInfo);
+};
 const getProfile = async (req, res, next) => {
   try {
     const user = await User.findOne({ where: { id: req.user.id } });
@@ -359,6 +373,37 @@ const updateSalary = async (req, res, next) => {
   }
 };
 
+const updateUser = async (req, res) => {
+  console.log(req.body);
+  const { id, role, leader, project } = req.body;
+  const user = await User.findOne({ where: { id } });
+  if (role) {
+    user.role = role;
+  }
+  if (leader) {
+    user.leader = leader;
+  }
+  if (project) {
+    user.project = project;
+  }
+
+  user.save();
+
+  res.status(200).json({
+    message: "update success",
+  });
+};
+
+const deleteUser = async (req, res) => {
+  console.log(req.body);
+  let user = await User.findOne({ where: { id: req.body.id } });
+  console.log(user);
+  await user.destroy();
+  res.status(200).json({
+    message: "Delete sucess",
+  });
+};
+
 module.exports = {
   downloadFile,
   updateProfile,
@@ -368,4 +413,7 @@ module.exports = {
   uploadFile,
   updateSalary,
   schedule,
+  getAll,
+  updateUser,
+  deleteUser,
 };
