@@ -62,13 +62,23 @@ routerUser.post(
 );
 routerUser.get("/schedule/:id", UserController.schedule);
 
-routerUser.post(
-  "/changesalary",
-  validateBodySalary(schemasSalary.schemaSalary),
-  passport.authenticate("jwt", { session: false }),
-  checkRole(env.ROLE_ADMIN),
-  UserController.updateSalary
-);
+routerUser
+  .route("/salary")
+  .post(
+    (req, res, next) => {
+      console.log('fsdjfkakj');
+      next();
+    },
+    validateBodySalary(schemasSalary.schemaSalary),
+    passport.authenticate("jwt", { session: false }),
+    checkRole(env.ROLE_ADMIN),
+    UserController.updateSalary
+  )
+  .get(
+    passport.authenticate("jwt", { session: false }),
+    checkRole(env.ROLE_ADMIN),
+    UserController.getSalary
+  );
 
 routerUser
   .route("/")
@@ -86,5 +96,5 @@ routerUser
     passport.authenticate("jwt", { session: false }),
     checkRole(env.ROLE_ADMIN),
     UserController.deleteUser
-  )
+  );
 module.exports = routerUser;

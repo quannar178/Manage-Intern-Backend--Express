@@ -6,10 +6,10 @@ const validateBody = (schema) => {
     console.log(req.body);
     if (validateResult.error) {
       res.status(400).json({
-        message: 'Input is invalid'
+        message: "Input is invalid",
       });
     } else {
-      return next();
+      next();
     }
   };
 };
@@ -42,7 +42,7 @@ const schemas = {
   }),
   changerole: Joi.object().keys({
     id: Joi.number().required(),
-    role: Joi.string().valid("intern", "leader", "admin").required()
+    role: Joi.string().valid("intern", "leader", "admin").required(),
   }),
 };
 

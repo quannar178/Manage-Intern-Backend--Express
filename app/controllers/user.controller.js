@@ -64,12 +64,13 @@ const updateOrInsertPublic = async (idUser, date, pub) => {
 };
 
 const updateOrInsertSalary = async (idUser, month, salary) => {
-  console.log("jfksjflalksfjlkdjf@");
+  console.log("jfksjflalksfjlkdjf@", idUser, month);
   try {
     const userSalary = await Salary.findOne({ where: { idUser, month } });
+    // console.log(userSalary);
 
     if (userSalary) {
-      console.log("exist", userSalary);
+      console.log("exist");
       userSalary.salary = salary;
       userSalary.save();
       return;
@@ -79,9 +80,9 @@ const updateOrInsertSalary = async (idUser, month, salary) => {
       month,
       salary,
     });
-    console.log(newSalary);
+    // console.log(newSalary);
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return new Error(error);
   }
 };
@@ -404,6 +405,43 @@ const deleteUser = async (req, res) => {
   });
 };
 
+const getSalary = async (req, res) => {
+  const users = await User.findAll();
+  var resInfo = [];
+  for (let i = 0; i < users.length; i++) {
+    const id = users[i].id;
+    console.log(id);
+
+    const salaries = await Salary.findAll({ where: { idUser: id } });
+    if (salaries.length == 0) {
+      let info = {};
+      info.id = users[i].id;
+      info.firstname = users[i].firstname;
+      info.lastname = users[i].lastname;
+      info.month = "no info";
+      info.salary = "no info";
+      resInfo.push(info);
+      console.log("length = 0");
+    } else {
+      for (let j = 0; j < salaries.length; j++) {
+        let info = {};
+        const element = salaries[j];
+        console.log("element", element.idUser, element.month);
+        info.id = users[i].id;
+        info.firstname = users[i].firstname;
+        info.lastname = users[i].lastname;
+        info.month = element.month;
+        info.salary = element.salary;
+        resInfo.push(info);
+        console.log(j);
+      }
+      console.log("lenth != 0");
+    }
+  }
+  console.log(resInfo);
+  res.status(200).json(resInfo);
+};
+
 module.exports = {
   downloadFile,
   updateProfile,
@@ -416,4 +454,5 @@ module.exports = {
   getAll,
   updateUser,
   deleteUser,
+  getSalary,
 };
