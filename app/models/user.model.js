@@ -65,6 +65,7 @@ module.exports = function (sequelize, Sequelize) {
 
   User.beforeCreate(async (user, options) => {
     try {
+      console.log("create@@@@", options);
       const salt = await bcryptjs.genSalt();
       console.log(salt);
       const passwordHash = await bcryptjs.hash(user.password, salt);
@@ -74,13 +75,19 @@ module.exports = function (sequelize, Sequelize) {
   });
 
   User.beforeUpdate(async (user, options) => {
-    try {
-      const salt = await bcryptjs.genSalt();
-      console.log(salt);
-      const passwordHash = await bcryptjs.hash(user.password, salt);
-      console.log(passwordHash);
-      user.password = passwordHash;
-    } catch (error) {}
+    console.log("update@@@@", options);
+    if (options.adminChange) {
+      console.log("don't change pass");
+      return;
+    } else {
+      try {
+        const salt = await bcryptjs.genSalt();
+        console.log(salt);
+        const passwordHash = await bcryptjs.hash(user.password, salt);
+        console.log(passwordHash);
+        user.password = passwordHash;
+      } catch (error) {}
+    }
   });
 
   User.prototype.isValidPassword = async function (newpasword) {

@@ -39,6 +39,7 @@ const schemas = {
     CMND: Joi.string().min(9).max(12).required(),
     gender: Joi.string().valid("male", "female"),
     university: Joi.string().min(2),
+    nation: Joi.string().min(2),
   }),
   changerole: Joi.object().keys({
     id: Joi.number().required(),

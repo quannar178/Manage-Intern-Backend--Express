@@ -98,15 +98,14 @@ const forgetPasswordPro = async (req, res) => {
     transporter.sendMail(mailOptions, function (error, info) {
       if (error) {
         console.log(error);
+        res.status(404).json(error);
       } else {
+        res.status(200).json({
+          message: "Success send link",
+        });
         console.log("Email sent: " + info.response);
       }
     });
-
-    res.status(200).json({
-      message: "Success send link",
-    });
-
   } else {
     res.status(StatusCodes.BAD_REQUEST).json({
       message: "Email is invalid",

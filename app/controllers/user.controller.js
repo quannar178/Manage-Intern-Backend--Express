@@ -153,7 +153,8 @@ const updateProfile = async (req, res, next) => {
 const getAll = async (req, res, next) => {
   const users = await User.findAll();
   let usersInfo = [];
-  users.forEach((user) => {
+  for (let i = 0; i < users.length; i++) {
+    const user = users[i];
     let info = {};
     info.id = user.id;
     info.firstname = user.firstname;
@@ -161,8 +162,15 @@ const getAll = async (req, res, next) => {
     info.role = user.role;
     info.leader = user.leader;
     info.project = user.project;
+
+    const filecv = await FileCV.findOne({ where: { idUser: user.id } });
+    if (!filecv) {
+      info["hasCV"] = false;
+    } else {
+      info["hasCV"] = true;
+    }
     usersInfo.push(info);
-  });
+  }
   res.status(200).json(usersInfo);
 };
 const getProfile = async (req, res, next) => {
@@ -317,45 +325,54 @@ const schedule = async (req, res) => {
     const day = new Date(schedule["date"]);
     const month = day.getMonth();
     if (month === monthNow) {
-      scheduleInfo[day.getDate() - 1] = schedule["draft"];
+      scheduleInfo[day.getDate() - 1] = day.getDate() - 1 + schedule["draft"];
     }
   });
-  res.status(200).json({ scheduleInfo });
+  if (scheduleInfo.length == 0) {
+    res.status(200).json({
+      scheduleInfo: "No info",
+    });
+  } else {
+    res.status(200).json({ scheduleInfo });
+  }
 };
 
 const uploadFile = async (req, res, next) => {
   try {
-    //find
     const filecv = await FileCV.findOne({ where: { idUser: req.user.id } });
-    console.log("in user controller@@@", filecv);
     if (filecv) {
-      filecv.idUser = req.user.id;
-      filecv.type = req.file.mimetype;
-      filecv.name = req.file.originalname;
-      filecv.data = req.file.data;
-      await filecv.save();
-
-      const result = {
-        filename: req.file.originalname,
-        message: "Upload Successfully!",
-      };
-
-      res.status(200).json(result);
-    } else {
-      await FileCV.create({
-        idUser: req.user.id,
-        // idUser: 102,
-        type: req.file.mimetype,
-        name: req.file.originalname,
-        data: req.file.buffer,
-      });
-      const result = {
-        filename: req.file.originalname,
-        message: "Upload Successfully!",
-      };
-
-      res.status(200).json(result);
+      await filecv.destroy();
     }
+    console.log("in user controller@@@", filecv);
+    // if (filecv) {
+    //   filecv.idUser = req.user.id;
+    //   filecv.type = req.file.mimetype;
+    //   filecv.name = req.file.originalname;
+    //   filecv.data = req.file.data;
+    //   await filecv.save();
+
+    //   const result = {
+    //     filename: req.file.originalname,
+    //     message: "Upload Successfully!",
+    //   };
+
+    //   res.status(200).json(result);
+    // } else {
+    const watch = await FileCV.create({
+      idUser: req.user.id,
+      type: req.file.mimetype,
+      name: req.file.originalname,
+      data: req.file.buffer,
+    });
+    const result = {
+      filename: req.file.originalname,
+      message: "Upload Successfully!",
+    };
+
+    console.log("%%%", watch);
+
+    res.status(200).json(result);
+    // }
   } catch (error) {
     next(error);
   }
@@ -388,7 +405,7 @@ const updateUser = async (req, res) => {
     user.project = project;
   }
 
-  user.save();
+  user.save({ adminChange: true });
 
   res.status(200).json({
     message: "update success",
@@ -442,6 +459,28 @@ const getSalary = async (req, res) => {
   res.status(200).json(resInfo);
 };
 
+const getTeam = async (req, res) => {
+  const IdTeam = req.user.leader;
+  const users = await User.findAll({ where: { leader: IdTeam } });
+  let infoTeam = [];
+  users.forEach((user) => {
+    let info = {};
+    info.id = user.id;
+    info.firstname = user.firstname;
+    info.lastname = user.lastname;
+    info.gender = user.gender;
+    if (user.project) {
+      info.project = user.project;
+    } else {
+      info.project = "No info";
+    }
+    info.role = user.role;
+    infoTeam.push(info);
+  });
+
+  res.status(200).json(infoTeam);
+};
+
 module.exports = {
   downloadFile,
   updateProfile,
@@ -455,4 +494,5 @@ module.exports = {
   updateUser,
   deleteUser,
   getSalary,
+  getTeam,
 };

@@ -66,7 +66,7 @@ routerUser
   .route("/salary")
   .post(
     (req, res, next) => {
-      console.log('fsdjfkakj');
+      console.log("fsdjfkakj");
       next();
     },
     validateBodySalary(schemasSalary.schemaSalary),
@@ -97,4 +97,11 @@ routerUser
     checkRole(env.ROLE_ADMIN),
     UserController.deleteUser
   );
+
+routerUser.get(
+  "/team",
+  passport.authenticate("jwt", { session: false }),
+  checkRole(env.ROLE_LEADER),
+  UserController.getTeam
+);
 module.exports = routerUser;
